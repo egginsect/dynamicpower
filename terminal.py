@@ -1,3 +1,5 @@
+import numpy as np
+from proximal import *
 class Terminal(object):
     def __init__(self, name, terminal_type, connections):
         self.name = name
@@ -24,10 +26,10 @@ class TransmissionLine(Device):
     def __init__(self, name, connections):
         Device.__init__(self, name, 'T', connections)
 
-class Load_Defferable(Device):
+class DefferableLoad(Device):
     def __init__(self, name, connections):
-        Device.__init__(self, name, 'T', connections)
+        Device.__init__(self, name, 'DL', connections)
 
-class Load_Curtalible(Device):
+class CurtalibleLoad(Device):
     def __init__(self, name, connections):
-        Device.__init__(self, name, 'T', connections)
+        Device.__init__(self, name, 'CL', connections)
