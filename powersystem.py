@@ -1,5 +1,4 @@
 from terminal import *
-from multiprocessing import Pool
 class PowerSystem(object):
     def __init__(self, terminals, adjmat):
        self.devicelist = list()
@@ -7,6 +6,8 @@ class PowerSystem(object):
        self.adjmat = adjmat
        self.terminal_count = {'N':0, 'G':0, 'B':0, 'T':0, 'DL':0, 'CL':0}
        self.adddterminals(terminals)
+       self.device_table={}
+       self.net_table={}
 
     def adddterminals(self, terminals):
         for (terminal,neighbors) in zip(terminals, self.adjmat.tolist()):
@@ -26,7 +27,22 @@ class PowerSystem(object):
                 elif terminal is 'CL':
                     self.devicelistnetlist.append(CurtalibleLoad('CL'+str(self.terminal_count[terminal]), neighbors))
                 self.terminal_count[terminal]+=1
-            
-   
-        
-         
+
+    def solve_problem(self, device):
+        print 'solve problem for device', device.name
+        p = cvx.Variable(device.T)
+        objective = cvx.Minimize(device.cost_function(p))
+        constraints = device.constrain(p)
+        prob = cvx.Problem(objective, constraints)
+        prob.solve()
+        #device.p = p.value 
+        print np.mean(p.value)
+      
+    def device_update(self):
+        for device in self.devicelist:
+            self.solve_problem(device)
+     
+    def start_simulations(self, maxiter):
+        self.device_update()
+      
+

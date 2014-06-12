@@ -14,12 +14,12 @@ class Device(Terminal):
         Terminal.__init__(self, name, 'Device', connections)
         self.device_type = device_type
         self.T = 10 
+        self.p = 0 
 
 class Generator(Device):
     def __init__(self, name, connections):
         Device.__init__(self, name, 'G', connections)
         self.params = {'alpha':1,'beta':1, 'Cmax':1}
-        self.p =None
     def cost_function(self,p):
         return self.params['alpha']*cvx.sum_squares(p)+self.params['beta']*cvx.sum_entries(p)
     def constrain(self,p):
@@ -32,21 +32,35 @@ class Generator(Device):
         objective = cvx.Minimize(self.cost_function(p))
         constraints = self.constrain(p)
         prob = cvx.Problem(objective, constraints)
-        prob.solve(verbose=True)
+        prob.solve()
         self.p = p.value   
+        print np.mean(p.value)
+    def compute_cost(self):
+        p = self.solve_problem(2)
+        print 'Compute cost for Geenerator',self.name
+        print np.mean(p)
+        return np.mean(self.p) 
        
 class Battery(Device):
     def __init__(self, name, connections):
         Device.__init__(self, name, 'B', connections)
+    def compute_cost(self):
+        return np.mean(self.p) 
         
 class TransmissionLine(Device):
     def __init__(self, name, connections):
         Device.__init__(self, name, 'T', connections)
+    def compute_cost(self):
+        return np.mean(self.p) 
 
 class DefferableLoad(Device):
     def __init__(self, name, connections):
         Device.__init__(self, name, 'DL', connections)
+    def compute_cost(self):
+        return np.mean(self.p) 
 
 class CurtalibleLoad(Device):
     def __init__(self, name, connections):
         Device.__init__(self, name, 'CL', connections)
+    def compute_cost(self):
+        return np.mean(self.p) 
