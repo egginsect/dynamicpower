@@ -4,11 +4,13 @@ class Terminal(object):
     def __init__(self, name, terminal_type, connections):
         self.name = name
         self.terminal_type = terminal_type
+        self.T = 10 
+        self.pbar = 1
+        self.u = np.ones((10,1))
 
 class Net(Terminal):
     def __init__(self, name, connections):
         Terminal.__init__(self, name, 'Net', connections)
-        self.u = 1
     def update_price():
         print self.name, 'update_price'
 
@@ -16,15 +18,20 @@ class Device(Terminal):
     def __init__(self, name, device_type, connections):
         Terminal.__init__(self, name, 'Device', connections)
         self.device_type = device_type
-        self.T = 10 
         self.p = 0 
+        self.lmbd = 1
+
+    def cost_function(self, p):
+        return prox_operator(self.fx, p, self.lmbd, self.u+self.pbar)
 
 class Generator(Device):
     def __init__(self, name, connections):
         Device.__init__(self, name, 'G', connections)
         self.params = {'alpha':1,'beta':1, 'Cmax':1}
-    def cost_function(self,p):
+
+    def fx(self,p):
         return self.params['alpha']*cvx.sum_squares(p)+self.params['beta']*cvx.sum_entries(p)
+    
     def constrain(self,p):
         con = list()
         for i in range(1, p.size[0]):
