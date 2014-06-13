@@ -2,8 +2,9 @@ from terminal import *
 import multiprocessing as mp
 def unwrap_self_solve_problem_d(arg, **kwarg):
     return PowerSystem.solve_problem_d(*arg, **kwarg)
+
 def net_updater(net):
-    net.update_price
+    net.update_price()
     
 class PowerSystem(object):
     def __init__(self, terminals, adjmat):
@@ -39,7 +40,7 @@ class PowerSystem(object):
         print 'solve problem for device', device.name
         p = cvx.Variable(device.T)
         objective = cvx.Minimize(device.cost_function(p))
-        constraints = device.constrain(p)
+        constraints = device.constrains(p)
         prob = cvx.Problem(objective, constraints)
         prob.solve()
         #device.p = p.value 

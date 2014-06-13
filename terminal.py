@@ -6,33 +6,34 @@ class Terminal(object):
         self.terminal_type = terminal_type
         self.T = 10 
         self.pbar = 1
-        self.u = np.ones((10,1))
+        self.u = np.random.uniform(size=(10,1))
 
 class Net(Terminal):
     def __init__(self, name, connections):
         Terminal.__init__(self, name, 'Net', connections)
-    def update_price():
+    def update_price(self):
         print self.name, 'update_price'
 
 class Device(Terminal):
-    def __init__(self, name, device_type, connections):
+    def __init__(self, name, device_type, connections, params):
         Terminal.__init__(self, name, 'Device', connections)
         self.device_type = device_type
+        self.params = params
         self.p = 0 
         self.lmbd = 1
+       
 
     def cost_function(self, p):
         return prox_operator(self.fx, p, self.lmbd, self.u+self.pbar)
 
 class Generator(Device):
-    def __init__(self, name, connections):
-        Device.__init__(self, name, 'G', connections)
-        self.params = {'alpha':1,'beta':1, 'Cmax':1}
-
+    def __init__(self, name, connections, params={'alpha':1,'beta':1, 'Cmax':1}):
+        Device.__init__(self, name, 'G', connections, params)
+        
     def fx(self,p):
         return self.params['alpha']*cvx.sum_squares(p)+self.params['beta']*cvx.sum_entries(p)
     
-    def constrain(self,p):
+    def constrains(self,p):
         con = list()
         for i in range(1, p.size[0]):
             con.append(p[i,:]-p[i-1,:]<=self.params['Cmax'])
@@ -45,29 +46,41 @@ class Generator(Device):
         prob.solve()
         self.p = p.value   
         print np.mean(p.value)'''
-    def compute_cost(self):
-        p = self.solve_problem(2)
-        print 'Compute cost for Geenerator',self.name
-        print np.mean(p)
-        return np.mean(self.p) 
        
 class Battery(Device):
-    def __init__(self, name, connections):
-        Device.__init__(self, name, 'B', connections)
+    def __init__(self, name, connections, params=None):
+        Device.__init__(self, name, 'B', connections, params)
     def compute_cost(self):
         return np.mean(self.p) 
         
 class TransmissionLine(Device):
-    def __init__(self, name, connections):
+    def __init__(self, name, connections, params ={'R':1, 'V':1, 'Cmax':1}):
         Device.__init__(self, name, 'T', connections)
-    def compute_cost(self):
-        return np.mean(self.p) 
+    def fx(self,p):
+        return 0
+    '''def constrains(p):
+        con = list()
+        con.append(cvx.norm(p,1)/2 <= self.params['Cmax'])
+        con.append(p1)'''
+        
+class Load(Device):
+    def __init__(self, name, connections, params = {'l':1}):
+        Device.__init__(self, name, 'L', connections)
+    def fx(self, p):
+        return 0
+    def constrains(self, p):
+        return [p==self.params['l']]
 
 class DefferableLoad(Device):
-    def __init__(self, name, connections):
-        Device.__init__(self, name, 'DL', connections)
-    def compute_cost(self):
-        return np.mean(self.p) 
+    def __init__(self, name, connections, params = {'E':8,'Lmax':1}):
+        Device.__init__(self, name, 'DL', connections, params)
+    def fx(self,p):
+        return 0
+    def constrains(self, p):
+        con = list()
+        con.append(cvx.sum_entries(p)>=self.params['E'])
+        con.append(p>=0)
+        con.append(p<=self.param['Lmax'])
 
 class CurtalibleLoad(Device):
     def __init__(self, name, connections):
