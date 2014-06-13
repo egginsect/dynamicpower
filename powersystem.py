@@ -1,6 +1,13 @@
 from terminal import *
+import multiprocessing as mp
+def unwrap_self_solve_problem_d(arg, **kwarg):
+    return PowerSystem.solve_problem_d(*arg, **kwarg)
+def net_updater(net):
+    net.update_price
+    
 class PowerSystem(object):
     def __init__(self, terminals, adjmat):
+       self.phase = 0
        self.devicelist = list()
        self.netlist = list()     
        self.adjmat = adjmat
@@ -28,7 +35,7 @@ class PowerSystem(object):
                     self.devicelistnetlist.append(CurtalibleLoad('CL'+str(self.terminal_count[terminal]), neighbors))
                 self.terminal_count[terminal]+=1
 
-    def solve_problem(self, device):
+    def solve_problem_d(self, device):
         print 'solve problem for device', device.name
         p = cvx.Variable(device.T)
         objective = cvx.Minimize(device.cost_function(p))
@@ -39,10 +46,17 @@ class PowerSystem(object):
         print np.mean(p.value)
       
     def device_update(self):
-        for device in self.devicelist:
-            self.solve_problem(device)
+        print 'updating device'
+        pool = mp.Pool(len(self.devicelist))
+        pool.map(unwrap_self_solve_problem_d, zip([self]*len(self.devicelist), self.devicelist))
+  
+    def net_update(self):    
+        print 'updating net'
+        pool = mp.Pool(len(self.netlist))
+        pool.map(net_updater, self.netlist)
      
     def start_simulations(self, maxiter):
-        self.device_update()
+        for i in xrange(maxiter):
+            self.device_update()
+            self.net_update()
       
-

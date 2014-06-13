@@ -8,6 +8,9 @@ class Terminal(object):
 class Net(Terminal):
     def __init__(self, name, connections):
         Terminal.__init__(self, name, 'Net', connections)
+        self.u = 1
+    def update_price():
+        print self.name, 'update_price'
 
 class Device(Terminal):
     def __init__(self, name, device_type, connections):
@@ -27,14 +30,14 @@ class Generator(Device):
         for i in range(1, p.size[0]):
             con.append(p[i,:]-p[i-1,:]<=self.params['Cmax'])
         return con
-    def solve_problem(self,u):
+        '''def solve_problem(self,u):
         p = cvx.Variable(self.T)
         objective = cvx.Minimize(self.cost_function(p))
         constraints = self.constrain(p)
         prob = cvx.Problem(objective, constraints)
         prob.solve()
         self.p = p.value   
-        print np.mean(p.value)
+        print np.mean(p.value)'''
     def compute_cost(self):
         p = self.solve_problem(2)
         print 'Compute cost for Geenerator',self.name
