@@ -4,7 +4,7 @@ def unwrap_self_solve_problem_d(arg, **kwarg):
     return PowerSystem.solve_problem_d(*arg, **kwarg)
 
 def net_updater(net):
-    net.update_price()
+    net.compute_price()
     
 class PowerSystem(object):
     def __init__(self, terminals, adjmat):
@@ -18,22 +18,22 @@ class PowerSystem(object):
        self.net_table={}
 
     def adddterminals(self, terminals):
-        for (terminal,neighbors) in zip(terminals, self.adjmat.tolist()):
+        for (idx,terminal),neighbors in zip(enumerate(terminals), self.adjmat.tolist()):
             if terminal not in self.terminal_count.keys():
                 print 'Wrong terminal type' 
             else:
                 if terminal is 'N':
-                    self.netlist.append(Net('N'+str(self.terminal_count[terminal]), neighbors))
+                    self.netlist.append(Net('N'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
                 elif terminal is 'G':
-                    self.devicelist.append(Generator('G'+str(self.terminal_count[terminal]), neighbors))
+                    self.devicelist.append(Generator('G'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
                 elif terminal is 'B':
-                    self.devicelist.append(Battery('B'+str(self.terminal_count[terminal]), neighbors))
+                    self.devicelist.append(Battery('B'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
                 elif terminal is 'T':
-                    self.devicelist.append(TransmissionLine('T'+str(self.terminal_count[terminal]), neighbors))
+                    self.devicelist.append(TransmissionLine('T'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
                 elif terminal is 'DL':
-                    self.devicelist.append(DefferableLoad('DL'+str(self.terminal_count[terminal]), neighbors))
+                    self.devicelist.append(DefferableLoad('DL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
                 elif terminal is 'CL':
-                    self.devicelistnetlist.append(CurtalibleLoad('CL'+str(self.terminal_count[terminal]), neighbors))
+                    self.devicelistnetlist.append(CurtalibleLoad('CL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
                 self.terminal_count[terminal]+=1
 
     def solve_problem_d(self, device):
@@ -60,4 +60,4 @@ class PowerSystem(object):
         for i in xrange(maxiter):
             self.device_update()
             self.net_update()
-      
+            

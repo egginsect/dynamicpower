@@ -1,24 +1,32 @@
 import numpy as np
 from proximal import *
 class Terminal(object):
-    def __init__(self, name, terminal_type, connections):
+    def __init__(self, name, terminal_type, connections, params):
         self.name = name
         self.terminal_type = terminal_type
         self.T = 10 
         self.pbar = 1
         self.u = np.random.uniform(size=(10,1))
+        self.params = params
+        self.connections = connections
 
 class Net(Terminal):
-    def __init__(self, name, connections):
-        Terminal.__init__(self, name, 'Net', connections)
-    def update_price(self):
+    def __init__(self, name, connections, params=None):
+        Terminal.__init__(self, name, 'Net', connections, params)
+        self.power_buffer = [np.zeros([self.T,1])]*len(connections)
+        self.power_imbalance = None
+    def compute_power_imbalance(self):
+        self.power_imbalance = sum(self.power_buffer)/len(self.connections)
+        return self.power_imbalance
+        
+    def compute_price(self):
+        self.u = self.u + self.compute_power_imbalance()
         print self.name, 'update_price'
 
 class Device(Terminal):
     def __init__(self, name, device_type, connections, params):
-        Terminal.__init__(self, name, 'Device', connections)
+        Terminal.__init__(self, name, 'Device', connections, params)
         self.device_type = device_type
-        self.params = params
         self.p = 0 
         self.lmbd = 1
        
