@@ -13,9 +13,9 @@ class PowerSystem(object):
        self.netlist = list()     
        self.adjmat = adjmat
        self.terminal_count = {'N':0, 'G':0, 'B':0, 'T':0, 'DL':0, 'CL':0}
+       self.device_table=dict()
+       self.net_table=dict()
        self.adddterminals(terminals)
-       self.device_table={}
-       self.net_table={}
 
     def adddterminals(self, terminals):
         for (idx,terminal),neighbors in zip(enumerate(terminals), self.adjmat.tolist()):
@@ -24,16 +24,19 @@ class PowerSystem(object):
             else:
                 if terminal is 'N':
                     self.netlist.append(Net('N'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                elif terminal is 'G':
-                    self.devicelist.append(Generator('G'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                elif terminal is 'B':
-                    self.devicelist.append(Battery('B'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                elif terminal is 'T':
-                    self.devicelist.append(TransmissionLine('T'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                elif terminal is 'DL':
-                    self.devicelist.append(DefferableLoad('DL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                elif terminal is 'CL':
-                    self.devicelistnetlist.append(CurtalibleLoad('CL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
+                    self.net_table[self.terminal_count['N']] = idx
+                else:
+                    if terminal is 'G':
+                        self.devicelist.append(Generator('G'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
+                    elif terminal is 'B':
+                        self.devicelist.append(Battery('B'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
+                    elif terminal is 'T':
+                        self.devicelist.append(TransmissionLine('T'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
+                    elif terminal is 'DL':
+                        self.devicelist.append(DefferableLoad('DL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
+                    elif terminal is 'CL':
+                        self.devicelistnetlist.append(CurtalibleLoad('CL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
+                    self.device_table[sum(self.terminal_count.values())-self.terminal_count['N']]=idx
                 self.terminal_count[terminal]+=1
 
     def solve_problem_d(self, device):

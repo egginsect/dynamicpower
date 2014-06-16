@@ -22,6 +22,9 @@ class Net(Terminal):
     def compute_price(self):
         self.u = self.u + self.compute_power_imbalance()
         print self.name, 'update_price'
+    
+    def set_power_imbalance(self, p): 
+        pd = np.mean(p) 
 
 class Device(Terminal):
     def __init__(self, name, device_type, connections, params):
