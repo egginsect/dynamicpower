@@ -89,13 +89,18 @@ class Generator(Device):
 
 
 class Battery(Device):
-    def __init__(self, name, connections, terminals, params=None):
+    def __init__(self, name, connections, terminals, params={'Dmax':1,'Cmax':1, 'Qmax':10,'qinit':0}):
         Device.__init__(self, name, 'B', connections, terminals, params)
         self.states = ('recharge', 'discharge')
     def fx(self,p):
         return 0
     def constrains(self,p):
-        return []
+        con = list()
+        con.append(p>=-self.params['Dmax'])
+        con.append(p>=self.params['Cmax'])
+        con.append(self.params['qinit']+cvx.sum_entries(p)>=0)
+        con.append(self.params['qinit']+cvx.sum_entries(p)<=self.params['Qmax'])
+        return con
 
 class Load(Device):
     def __init__(self, name, connections, terminals, params={'l':1}):
