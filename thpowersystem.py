@@ -21,6 +21,10 @@ class PowerSystem(object):
                         self.terminals.append(Generator('G'+str(self.terminal_count[terminal]), neighbors, self.terminals))
                 self.terminal_count[terminal]+=1
  
+                    if terminal is 'L':
+                        self.terminals.append(Generator('L'+str(self.terminal_count[terminal]), neighbors, self.terminals))
+                self.terminal_count[terminal]+=1
+
     def device_update(self):
       for t in self.terminals:
           if(t.terminal_type is 'Device'):
