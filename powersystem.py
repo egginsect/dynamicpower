@@ -1,5 +1,6 @@
-from terminal import *
+from node import *
 import multiprocessing as mp
+deviceFunctions = {'N':Net, 'G':Generator, 'B':Battery, 'T':TransmissionLine, 'FL':FixedLoad}
 def unwrap_self_solve_problem_d(arg, **kwarg):
     return PowerSystem.solve_problem_d(*arg, **kwarg)
 
@@ -7,41 +8,24 @@ def net_updater(net):
     net.compute_price()
     
 class PowerSystem(object):
-    def __init__(self, terminals, adjmat):
-       self.phase = 0
-       self.devicelist = list()
-       self.netlist = list()     
+    def __init__(self, nodes, adjmat):
+       self.nodelist = list()   
        self.adjmat = adjmat
-       self.terminal_count = {'N':0, 'G':0, 'B':0, 'T':0, 'DL':0, 'CL':0}
-       self.device_table=dict()
-       self.net_table=dict()
-       self.adddterminals(terminals)
+       self.node_count = dict(zip(deviceFunctions.keys(),[0]*len(deviceFunctions.keys())))
+       for node in nodes:
+           self.adddnode(node)
 
-    def adddterminals(self, terminals):
-        for (idx,terminal),neighbors in zip(enumerate(terminals), self.adjmat.tolist()):
-            if terminal not in self.terminal_count.keys():
-                print 'Wrong terminal type' 
-            else:
-                if terminal is 'N':
-                    self.netlist.append(Net('N'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                    self.net_table[self.terminal_count['N']] = idx
-                else:
-                    if terminal is 'G':
-                        self.devicelist.append(Generator('G'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                    elif terminal is 'B':
-                        self.devicelist.append(Battery('B'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                    elif terminal is 'T':
-                        self.devicelist.append(TransmissionLine('T'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                    elif terminal is 'DL':
-                        self.devicelist.append(DefferableLoad('DL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                    elif terminal is 'CL':
-                        self.devicelistnetlist.append(CurtalibleLoad('CL'+str(self.terminal_count[terminal]), np.where(neighbors==6)))
-                    self.device_table[sum(self.terminal_count.values())-self.terminal_count['N']]=idx
-                self.terminal_count[terminal]+=1
-
+    def adddnode(self, nodeType, param=None):
+        if nodeType not in self.node_count.keys():
+            print(nodeType)
+            print(self.node_count.keys())
+            #raise ValueError('Wrong node type')
+        else:
+                self.nodelist.append(deviceFunctions[nodeType](nodeType+str(self.node_count[nodeType]), [0], param))
+                self.node_count[nodeType]+=1
+                
     def solve_problem_d(self, device):
         print 'solve problem for device', device.name
-        p = cvx.Variable(device.T)
         objective = cvx.Minimize(device.cost_function(p))
         constraints = device.constrains(p)
         prob = cvx.Problem(objective, constraints)

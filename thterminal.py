@@ -15,6 +15,7 @@ class Terminal(Thread):
         self.params = params
         self.state = 'idle'  
         self.terminals = terminals
+        print len(self.terminals)
 
  
 class Net(Terminal):
